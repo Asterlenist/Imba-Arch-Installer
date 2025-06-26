@@ -57,6 +57,9 @@ echo "🚀 Настройка загрузчика (GRUB)..."
 grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=GRUB
 grub-mkconfig -o /boot/grub/grub.cfg
 
+echo "🧠 Включаем дисплей-менеджер SDDM..."
+systemctl enable sddm
+
 echo "📡 Включаем сеть..."
 systemctl enable NetworkManager
 
@@ -66,7 +69,7 @@ pacman -Syy
 
 echo "📦 Устанавливаем dev/gamer пакеты..."
 pacman -Syu --noconfirm \
-  xorg xorg-xinit i3-gaps kitty firefox \
+  xorg xorg-xinit xorg-xwayland gnome gnome-tweaks kitty firefox \
   steam lutris gamemode \
   code zsh unzip wget curl \
   pipewire pipewire-pulse pavucontrol \
@@ -91,3 +94,4 @@ echo "🌈 Добро пожаловать в Arch, бро."
 EOF
 
 echo "✅ Готово. Перезагружайся и кайфуй!"
+
