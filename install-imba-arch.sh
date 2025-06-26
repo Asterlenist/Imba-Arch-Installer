@@ -7,7 +7,7 @@
 set -e
 
 echo "🔧 Подключаем зеркало от Arch'а..."
-reflector --country Germany,Russia --latest 10 --protocol https --sort rate --save /etc/pacman.d/mirrorlist
+reflector --country Japan,Russia --latest 10 --protocol https --sort rate --save /etc/pacman.d/mirrorlist
 
 echo "⌛ Синхронизация времени..."
 timedatectl set-ntp true
@@ -31,7 +31,7 @@ mkdir /mnt/boot
 mount "${DISK}1" /mnt/boot
 
 echo "📦 Устанавливаем базу системы..."
-pacstrap /mnt base base-devel linux linux-firmware linux-headers btrfs-progs neovim git networkmanager grub efibootmgr sudo reflector
+pacstrap /mnt base base-devel linux linux-lts linux-firmware linux-headers btrfs-progs neovim git networkmanager grub efibootmgr sudo reflector
 
 echo "🧱 Настраиваем fstab..."
 genfstab -U /mnt >> /mnt/etc/fstab
@@ -40,16 +40,16 @@ echo "🚪 chroot внутрь!"
 arch-chroot /mnt /bin/bash <<EOF
 
 echo "🌐 Устанавливаем часовой пояс, язык, хостнейм..."
-ln -sf /usr/share/zoneinfo/Europe/Moscow /etc/localtime
+ln -sf /usr/share/zoneinfo/Asia/Vladivostok /etc/localtime
 hwclock --systohc
 echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen
 locale-gen
 echo "LANG=en_US.UTF-8" > /etc/locale.conf
-echo "imba-arch" > /etc/hostname
+echo "georgy-pc" > /etc/hostname
 
 echo "🛡️ Устанавливаем sudo и юзера..."
-useradd -m -G wheel gamer
-echo "gamer:archlinux" | chpasswd
+useradd -m -G wheel georgy
+echo "georgy:archlinux" | chpasswd
 echo "root:archlinux" | chpasswd
 echo "%wheel ALL=(ALL:ALL) ALL" >> /etc/sudoers
 
@@ -60,6 +60,10 @@ grub-mkconfig -o /boot/grub/grub.cfg
 echo "📡 Включаем сеть..."
 systemctl enable NetworkManager
 
+echo "🎮 Подключаем multilib для 32-бит игр..."
+sed -i '/#\[multilib\]/,+1 s/#//' /etc/pacman.conf
+pacman -Syy
+
 echo "📦 Устанавливаем dev/gamer пакеты..."
 pacman -Syu --noconfirm \
   xorg xorg-xinit i3-gaps kitty firefox \
@@ -69,14 +73,14 @@ pacman -Syu --noconfirm \
   noto-fonts noto-fonts-emoji ttf-dejavu \
   lib32-gamemode lib32-vulkan-icd-loader \
   mesa vulkan-intel lib32-mesa lib32-vulkan-intel \
-  base-devel git
+  base-devel git flatpak
 
-echo "🎮 Подключаем multilib для 32-бит игр..."
-sed -i '/#\[multilib\]/,+1 s/#//' /etc/pacman.conf
-pacman -Syy
+  echo "📦 Устанавливаем Flathub и LibreWolf..."
+  flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+  flatpak install -y flathub io.gitlab.librewolf-community
 
 echo "✨ Установка paru (AUR помощник)..."
-sudo -u gamer bash <<EOG
+sudo -u georgy bash <<EOG
 cd ~
 git clone https://aur.archlinux.org/paru.git
 cd paru
